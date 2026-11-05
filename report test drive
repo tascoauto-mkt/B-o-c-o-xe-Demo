@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14213d">
+<title>Báo cáo xe demo</title>
+<style>
+:root{--ink:#14213d;--muted:#5c6780;--line:#d9dee8;--bg:#f4f6fa;--card:#fff;--accent:#1f5eff;--ok:#127a3e;--okbg:#def5e6;--abs:#7d6300;--absbg:#fff5c8;--bad:#b3261e;--badbg:#fde4e2}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+#app{max-width:560px;margin:0 auto;min-height:100%;display:flex;flex-direction:column}
+header{background:var(--ink);color:#fff;padding:14px 16px;padding-top:max(14px,env(safe-area-inset-top))}
+header h1{font-size:18px;font-weight:600;margin:0}
+header p{margin:2px 0 0;font-size:14px;opacity:.82}
+main{padding:16px;flex:1}
+h2{font-size:17px;font-weight:600;margin:0 0 12px}
+button{font:inherit;border:0;border-radius:10px;cursor:pointer}
+.btn{display:block;width:100%;min-height:52px;padding:12px 16px;font-weight:600;background:var(--accent);color:#fff;margin-top:10px}
+.btn.alt{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+.btn.danger{background:var(--card);color:var(--bad);border:1px solid var(--bad)}
+.btn:disabled{opacity:.5}
+.link{background:none;color:var(--accent);padding:10px 0;font-weight:600}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:58px;padding:12px 14px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:10px;margin-bottom:8px;text-align:left;font-weight:600}
+.row small{display:block;font-weight:400;color:var(--muted);font-size:13px}
+.pill{flex:none;font-size:13px;font-weight:600;padding:4px 10px;border-radius:99px;background:#eceff5;color:var(--muted);max-width:55%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pill.done{background:var(--okbg);color:var(--ok)}.pill.absent{background:var(--absbg);color:var(--abs)}.pill.missing,.pill.error{background:var(--badbg);color:var(--bad)}.pill.sending{background:#e2eaff;color:var(--accent)}
+input,textarea,select{font:inherit;width:100%;padding:13px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+textarea{min-height:110px;resize:vertical}
+label{display:block;font-weight:600;margin:12px 0 6px}
+.note{padding:11px 13px;border-radius:10px;margin-bottom:12px;font-size:14px;background:#e9eefb}
+.note.warn{background:var(--absbg);color:#5c4900}.note.bad{background:var(--badbg);color:var(--bad)}.note.good{background:var(--okbg);color:var(--ok)}
+.sub{color:var(--muted);font-size:14px;margin:0 0 12px}
+.cam{position:fixed;inset:0;background:#000;color:#fff;display:flex;flex-direction:column;z-index:5}
+.cam .top{padding:12px 14px;padding-top:max(12px,env(safe-area-inset-top));background:#000}
+.cam .top b{display:block;font-size:17px}.cam .top span{font-size:13px;opacity:.8}
+.cam .view{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;background:#000}
+.cam video,.cam img{width:100%;height:100%;object-fit:contain;display:block}
+.cam .bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;padding-bottom:max(14px,env(safe-area-inset-bottom));background:#000}
+.cam .bar button.txt{background:none;color:#fff;padding:12px 6px;min-width:76px;font-weight:600}
+.shutter{width:72px;height:72px;border-radius:50%;background:#fff;border:5px solid #9aa6bd;flex:none}
+.cam .btn{margin:0;flex:1}
+.steps{display:flex;gap:6px;margin-top:8px}.steps i{flex:1;height:4px;background:#444;border-radius:2px}.steps i.on{background:#fff}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px}
+.shot{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;padding:0;color:var(--ink);text-align:left}
+.shot img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;background:#000}
+.shot span{display:block;padding:8px 10px;font-size:13px;font-weight:600}.shot em{display:block;font-style:normal;font-weight:400;color:var(--accent)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:13px 14px;margin-bottom:12px;font-size:14px}
+.card h3{font-size:15px;font-weight:600;margin:0 0 6px}.card h4{font-size:14px;font-weight:600;margin:10px 0 4px}.card ul,.card ol{margin:0;padding-left:20px}.card li{margin-bottom:3px}
+.cam .top p{margin:4px 0 6px;font-size:14px;line-height:1.4}
+.spin{padding:40px 0;text-align:center;color:var(--muted)}
+.toast{position:fixed;left:16px;right:16px;bottom:max(18px,env(safe-area-inset-bottom));background:var(--ink);color:#fff;padding:13px 15px;border-radius:10px;z-index:9;max-width:528px;margin:auto}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+'use strict';
+/* DÁN LINK WEB APP APPS SCRIPT VÀO ĐÂY */
+const API_URL = 'https://script.google.com/macros/s/AKfycbzhNnubJvp9kTE2nzfSyEqXCh0qDoeYxDCZV0BacYo9369A_jMqwGeeOYqTAMbMhYgxIA/exec';
+
+/* Dữ liệu có sẵn để app hiện ngay, sau đó tự cập nhật ngầm từ Google. Không chứa mã PIN. */
+const SNAPSHOT_DEALERS = {"GL":{"Bắc":["Long Biên","Phạm Văn Đồng","Giải Phóng","Võ Chí Công","Hà Đông","Hải Phòng","Hải Dương","Thái Nguyên","Hạ Long","Hưng Yên","Bắc Giang","Bắc Ninh","Lạng Sơn","Vĩnh Phúc","Hòa Bình","Phú Thọ","Hà Nam","Thái Bình","Nam Định","Nghệ An","Hà Tĩnh","Thanh Hóa"],"Trung":["Đà Nẵng","Quảng Nam","Quảng Ngãi","Quảng Bình","Quảng Trị","Huế","Bình Định","Nha Trang","Gia Lai","Đắk Lắk"],"Nam":["Võ Văn Kiệt","Phú Mỹ Hưng","Chợ Lớn","Chế Lan Viên","Tân Phú","Nguyễn Văn Trỗi","Gia Định","Đông Sài Gòn","Bình Dương","Vũng Tàu","Đắk Nông","Đà Lạt","Bình Thuận","Bình Phước","Đồng Nai","Cần Thơ","Vĩnh Long","An Giang","Cà Mau","Kiên Giang","Phú Quốc","Long An","Tây Ninh"]},"LC":{"Bắc":["Long Biên","Phạm Văn Đồng","Hải Phòng","Hải Dương","Thái Nguyên","Hạ Long","Bắc Giang","Lạng Sơn","Vĩnh Phúc","Phú Thọ","Hà Nam","Thái Bình","Nam Định","Nghệ An","Hà Tĩnh","Thanh Hóa"],"Trung":["Đà Nẵng","Quảng Nam","Quảng Ngãi","Quảng Bình","Bình Định","Nha Trang","Gia Lai","Buôn Mê Thuật"],"Nam":["Võ Văn Kiệt","Tân Cảng","Đông Sài Gòn","Nguyễn Văn Trỗi","Gia Định","Bình Dương","Vũng Tàu","Đồng Nai","Tân Phú","Cần Thơ","Đà Lạt","Bình Thuận","Bình Phước","Vĩnh Long","Phú Quốc","Long An","Tây Ninh"]}};
+const SNAPSHOT = {
+  minReason:10,
+  brands:{GL:{name:'Geely',models:['Coolray','EX2','EX5','Monjaro','Okavango']},LC:{name:'Lynk & Co',models:['LC 02','LC 03','LC 06','LC 08']}},
+  positions:[{id:'1-ngoai-that',label:'Ngoại thất',hint:'Chụp chéo 45° từ phía trước hoặc phía sau, lấy toàn cảnh xe, thấy rõ độ bóng sạch và biển số xe Demo.'},{id:'2-khoang-lai',label:'Nội thất - khoang lái',hint:'Góc rộng khoang lái phía trước, thấy rõ mặt ghế, sàn xe và bảng điều khiển trung tâm.'},{id:'3-man-hinh-taplo',label:'Nội thất - màn hình taplo',hint:'Cận cảnh màn hình taplo đang bật sáng, thấy rõ mức xăng/pin, số ODO và không báo lỗi.'},{id:'4-checksheet',label:'Checksheet có chữ ký',hint:'Chụp rõ toàn bộ phiếu của xe này đã đánh dấu, có chữ ký Người lập phiếu và Giám đốc Đại lý/DP.'}],
+  dealers:Object.keys(SNAPSHOT_DEALERS).flatMap(b=>Object.keys(SNAPSHOT_DEALERS[b]).flatMap(r=>SNAPSHOT_DEALERS[b][r].map(n=>({id:b+'|'+n,brand:b,name:n,region:r}))))
+};
+const MAX_EDGE = 1280, JPEG_QUALITY = 0.6, CHECKSHEET_QUALITY = 0.75, TZ = 'Asia/Ho_Chi_Minh';
+const $app = document.getElementById('app');
+const store = {
+  get(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } },
+  set(k,v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} },
+  del(k){ try { localStorage.removeItem(k); } catch(e){} }
+};
+const S = { config:null, offset:0, session:store.get('session'), cars:{}, brand:null, shots:[], stepIdx:0, model:null, retakeOnly:false, stream:null, working:false };
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function now(){ return Date.now()+S.offset; }
+function parts(ms){ const o={}; new Intl.DateTimeFormat('en-GB',{timeZone:TZ,hourCycle:'h23',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'}).formatToParts(new Date(ms)).forEach(p=>{o[p.type]=p.value;}); return o; }
+function stampTime(ms){ const p=parts(ms); return p.day+'/'+p.month+'/'+p.year+' '+p.hour+':'+p.minute+':'+p.second; }
+function toast(m){ const t=document.createElement('div'); t.className='toast'; t.textContent=m; document.body.appendChild(t); setTimeout(()=>t.remove(),3500); }
+function norm(s){ return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase(); }
+function shell(title,sub,body){ $app.innerHTML='<header><h1>'+esc(title)+'</h1>'+(sub?'<p>'+esc(sub)+'</p>':'')+'</header><main>'+inAppWarn()+body+'</main>'; window.scrollTo(0,0); }
+function inAppWarn(){ return /Zalo|FBAN|FBAV|FB_IAB|Instagram|Line\//i.test(navigator.userAgent) ? '<div class="note warn">Bạn đang mở trong Zalo/Facebook nên camera có thể bị chặn. Hãy mở link bằng Chrome hoặc Safari.</div>' : ''; }
+function on(id,fn){ const el=document.getElementById(id); if(el) el.onclick=fn; }
+
+/* ---------- Gọi máy chủ ---------- */
+async function request(url,opt){
+  const ctrl=new AbortController(); const timer=setTimeout(()=>ctrl.abort(),60000);
+  try{
+    const res=await fetch(url,Object.assign({redirect:'follow',signal:ctrl.signal},opt));
+    return await res.json();
+  }catch(e){ return {ok:false,retry:true,network:true,error:'Mất kết nối mạng, app sẽ tự thử lại.'}; }
+  finally{ clearTimeout(timer); }
+}
+function post(body){ return request(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)}); }
+async function postRetry(body,tries){
+  let r; for(let i=0;i<tries;i++){ r=await post(body); if(r.ok||!r.retry) return r; await sleep(1500*(i+1)+Math.random()*1500); } return r;
+}
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+/* ---------- Hàng đợi gửi ảnh: lưu trên máy tới khi máy chủ xác nhận ---------- */
+const Q = {
+  db:null, mem:new Map(),
+  open(){ return new Promise(res=>{ try{ const r=indexedDB.open('xedemo',1); r.onupgradeneeded=()=>r.result.createObjectStore('jobs',{keyPath:'id'}); r.onsuccess=()=>{Q.db=r.result;res();}; r.onerror=()=>res(); }catch(e){res();} }); },
+  tx(mode,fn){ return new Promise((res,rej)=>{ const t=Q.db.transaction('jobs',mode); const out=fn(t.objectStore('jobs')); t.oncomplete=()=>res(out&&out.result); t.onerror=t.onabort=()=>rej(t.error); }); },
+  async put(j){ Q.mem.set(j.id,j); if(Q.db){ try{ await Q.tx('readwrite',s=>s.put(j)); }catch(e){} } },
+  async del(id){ Q.mem.delete(id); if(Q.db){ try{ await Q.tx('readwrite',s=>s.delete(id)); }catch(e){} } },
+  async load(){ if(Q.db){ try{ (await Q.tx('readonly',s=>s.getAll())||[]).forEach(j=>Q.mem.set(j.id,j)); }catch(e){} } },
+  all(){ return [...Q.mem.values()]; }
+};
+function jobFor(model){ const s=S.session; return s&&Q.all().find(j=>j.dealerId===s.id&&j.model===model); }
+async function pump(){
+  if(S.working) return; S.working=true;
+  let backoff=2000;
+  try{
+    for(;;){
+      const job=Q.all().find(j=>!j.failed);
+      if(!job) break;
+      let stop=false;
+      for(const p of job.photos){
+        if(p.sent) continue;
+        const r=await post({action:'upload',dealerId:job.dealerId,pin:job.pin,model:job.model,pos:p.pos,capturedAt:p.capturedAt,reportAt:Math.max(...job.photos.map(x=>x.capturedAt)),image:p.image});
+        if(r.ok){ p.sent=true; p.image=''; backoff=2000; await Q.put(job); refreshCars(); }
+        else if(r.retry){ stop=true; break; }
+        else { job.failed=r.error||'Không gửi được.'; await Q.put(job); refreshCars(); stop=true; break; }
+      }
+      if(!stop){
+        const r=await post({action:'complete',dealerId:job.dealerId,pin:job.pin,model:job.model,capturedAt:Math.max(...job.photos.map(p=>p.capturedAt))});
+        if(r.ok){
+          await Q.del(job.id);
+          if(S.session&&S.session.id===job.dealerId&&r.cars) setCars(r.cars);
+          backoff=2000; refreshCars(); toast('Đã gửi xong '+job.model);
+        }else if(r.retry){ stop=true; }
+        else { job.failed=r.error||'Không gửi được.'; await Q.put(job); refreshCars(); }
+      }
+      if(stop&&!job.failed){ await sleep(backoff+Math.random()*1500); backoff=Math.min(backoff*2,30000); }
+    }
+  }finally{ S.working=false; }
+}
+window.addEventListener('online',()=>pump());
+
+/* ---------- Khởi động ---------- */
+async function boot(){
+  if(API_URL.indexOf('PASTE_')===0){ shell('Báo cáo xe demo','','<div class="note bad">Chưa dán link Apps Script vào biến API_URL trong file index.html.</div>'); return; }
+  S.config=store.get('config')||SNAPSHOT;
+  await Q.open(); await Q.load();
+  if(S.session){ viewCars(true); } else { viewBrand(); }
+  refreshConfig();
+  await sleep(Math.random()*1500);
+  pump();
+}
+async function refreshConfig(){
+  const r=await request(API_URL+'?action=config',{method:'GET'});
+  if(!r.ok) return;
+  S.offset=r.now-Date.now(); S.config=r; store.set('config',r);
+  if(S.screen==='brand') viewBrand();
+}
+
+const STANDARDS = [
+  ['Biển tạm',['Dán đúng vị trí lắp biển số phía trước và phía sau','Bắt buộc có mica bảo vệ biển']],
+  ['A. Ngoại thất',['Rửa sạch, lau khô, không vệt nước/bùn đất','Không có vết trầy xước, móp méo mới hoặc bất thường','Tem "Xe lái thử" và biển số nguyên vẹn, sạch sẽ']],
+  ['B. Nội thất',['Có thảm sàn, đã hút bụi thảm và ghế','Lau sạch bề mặt nhựa, da, vô lăng, màn hình','Mùi thơm tiêu chuẩn, không rác/đồ cá nhân','Có USB chứa danh sách nhạc tiêu chuẩn']],
+  ['C. Kỹ thuật và vận hành',['Xăng/pin tối thiểu 50%','Áp suất lốp cân bằng, đúng chuẩn nhà sản xuất','Không có đèn cảnh báo lỗi trên taplo']]
+];
+function standardsHtml(){ return '<div class="card"><h3>Tiêu chuẩn cần đạt</h3>'+STANDARDS.map(g=>'<h4>'+esc(g[0])+'</h4><ul>'+g[1].map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>').join('')+'</div>'; }
+function shotsHtml(){ return '<div class="card"><h3>Ảnh cần chụp cho mỗi xe</h3><ol>'+positions().map(p=>'<li><b>'+esc(p.label)+':</b> '+esc(p.hint||'')+'</li>').join('')+'</ol></div>'; }
+function viewGuide(){
+  S.screen='guide';
+  shell('Quy trình xe Demo','Báo cáo tình trạng xe Demo hằng ngày',
+    '<div class="card"><h3>Người thực hiện và thời hạn</h3><ul><li>Giám đốc Đại lý phân công Trưởng nhóm Bán hàng, Lễ tân hoặc Cố vấn Dịch vụ phụ trách.</li><li>Kiểm tra đầu ngày làm việc, hoàn tất báo cáo trước 9h30 sáng.</li><li>Áp dụng cho toàn bộ xe Demo tại Đại lý Geely và Lynk &amp; Co.</li></ul></div>'
+    +standardsHtml()+shotsHtml()
+    +'<div class="card"><h3>Lỗi bị xử lý</h3><ul><li>Không báo cáo hoặc báo cáo trễ giờ</li><li>Dán biển tạm sai quy định</li><li>Checksheet thiếu chữ ký DP</li><li>Hình ảnh cho thấy xe không đạt tiêu chuẩn vệ sinh/vận hành</li></ul><h4>Chế tài lũy tiến</h4><ol><li>Lần 1: văn bản nhắc nhở công khai trên toàn hệ thống</li><li>Lần 2: trừ toàn bộ điểm MPI hạng mục xe Demo</li><li>Lần 3: trừ 20% thưởng KPI của Giám đốc Đại lý (DP)</li><li>Lần 4: trừ 100% thưởng KPI của Giám đốc Đại lý (DP)</li></ol></div>'
+    +'<button class="btn alt" id="back">Quay lại</button>');
+  on('back',()=>{ if(S.session) viewCars(false); else viewBrand(); });
+}
+
+/* ---------- Bước 1: thương hiệu, đại lý, PIN ---------- */
+function viewBrand(){
+  S.screen='brand';
+  const b=S.config.brands;
+  shell('Báo cáo xe demo','Bước 1: Chọn thương hiệu','<h2>Bạn báo cáo cho thương hiệu nào?</h2>'+Object.keys(b).map(c=>'<button class="row" data-b="'+c+'"><span>'+esc(b[c].name)+'<small>'+S.config.dealers.filter(d=>d.brand===c).length+' đại lý</small></span><span>›</span></button>').join('')+'<button class="link" id="guide">Xem quy trình và tiêu chuẩn</button>');
+  on('guide',viewGuide);
+  $app.querySelectorAll('[data-b]').forEach(el=>el.onclick=()=>{ S.brand=el.dataset.b; viewDealer(); });
+}
+function viewDealer(){
+  S.screen='dealer';
+  const name=S.config.brands[S.brand].name;
+  shell(name,'Bước 1: Chọn đại lý','<input id="q" placeholder="Tìm tên đại lý" autocomplete="off"><div id="list" style="margin-top:12px"></div><button class="link" id="back">‹ Đổi thương hiệu</button>');
+  const draw=()=>{
+    const q=norm(document.getElementById('q').value.trim());
+    const items=S.config.dealers.filter(d=>d.brand===S.brand&&norm(d.name).includes(q));
+    document.getElementById('list').innerHTML=items.map(d=>'<button class="row" data-d="'+esc(d.id)+'"><span>'+esc(d.name)+'<small>Miền '+esc(d.region)+'</small></span><span>›</span></button>').join('')||'<p class="sub">Không tìm thấy đại lý.</p>';
+    $app.querySelectorAll('[data-d]').forEach(el=>el.onclick=()=>viewPin(el.dataset.d));
+  };
+  document.getElementById('q').oninput=draw; draw(); on('back',viewBrand);
+}
+function viewPin(id){
+  S.screen='pin';
+  const d=S.config.dealers.find(x=>x.id===id);
+  shell(S.config.brands[d.brand].name+' '+d.name,'Xác nhận đúng đại lý','<div class="note">Bạn đang báo cáo cho <b>'+esc(S.config.brands[d.brand].name+' '+d.name)+'</b>. Nhập mã PIN của đại lý.</div><label for="pin">Mã PIN</label><input id="pin" inputmode="numeric" autocomplete="off" maxlength="8"><div id="err"></div><button class="btn" id="go">Vào báo cáo</button><button class="btn alt" id="back">Chọn lại đại lý</button>');
+  on('back',viewDealer);
+  on('go',async()=>{
+    const pin=document.getElementById('pin').value.trim(), go=document.getElementById('go');
+    if(!pin){ document.getElementById('err').innerHTML='<div class="note bad" style="margin-top:10px">Vui lòng nhập mã PIN.</div>'; return; }
+    go.disabled=true; go.textContent='Đang kiểm tra…';
+    const r=await postRetry({action:'login',dealerId:id,pin},4);
+    if(!r.ok){ go.disabled=false; go.textContent='Vào báo cáo'; document.getElementById('err').innerHTML='<div class="note bad" style="margin-top:10px">'+esc(r.error)+'</div>'; return; }
+    S.session={id,pin,brand:d.brand,name:d.name}; store.set('session',S.session); setCars(r.cars); S.offset=r.now-Date.now();
+    viewCars(false);
+  });
+}
+
+/* ---------- Bước 2: danh sách xe ---------- */
+function todayKey(){ const p=parts(now()); return p.year+'-'+p.month+'-'+p.day; }
+function setCars(cars){ S.cars=cars; if(S.session) store.set('cars',{id:S.session.id,date:todayKey(),cars}); }
+function loadCars(){ const c=store.get('cars'); S.cars=(c&&S.session&&c.id===S.session.id&&c.date===todayKey())?c.cars:{}; }
+function brandModels(){ return S.config.brands[S.session.brand].models; }
+function fullName(){ return S.config.brands[S.session.brand].name+' '+S.session.name; }
+function pillFor(m){
+  const job=jobFor(m);
+  if(job){
+    if(job.failed) return ['error','Lỗi gửi'];
+    return ['sending','Đang gửi '+job.photos.filter(p=>p.sent).length+'/'+job.photos.length];
+  }
+  const c=S.cars[m]||{state:'empty'};
+  if(c.state==='done') return ['done',c.text];
+  if(c.state==='absent') return ['absent','Xe vắng'];
+  if(c.state==='missing') return ['missing','Thiếu'];
+  return ['','Chưa báo cáo'];
+}
+function carsBody(){
+  const failed=Q.all().filter(j=>j.failed&&j.dealerId===S.session.id);
+  return '<div class="note">Kiểm tra đầu ngày, hoàn tất báo cáo trước 9h30. Mỗi xe cần 3 ảnh và 1 ảnh Checksheet có chữ ký DP. Xe còn thiếu sẽ hiện đỏ trên bảng tổng hợp.</div>'
+    +failed.map(j=>'<div class="note bad">'+esc(j.model)+': '+esc(j.failed)+'</div>').join('')
+    +'<h2>Chọn xe để báo cáo</h2><p class="sub">Đại lý không có dòng xe nào thì bỏ qua dòng xe đó.</p>'
+    +brandModels().map(m=>{ const p=pillFor(m); return '<button class="row" data-m="'+esc(m)+'"><span>'+esc(m)+'</span><span class="pill '+p[0]+'">'+esc(p[1])+'</span></button>'; }).join('')
+    +'<button class="btn alt" id="reload">Tải lại trạng thái</button><button class="btn alt" id="guide">Xem quy trình và tiêu chuẩn</button><button class="link" id="switch">Đổi đại lý</button>';
+}
+function bindCars(){
+  $app.querySelectorAll('[data-m]').forEach(el=>el.onclick=()=>viewCar(el.dataset.m));
+  on('reload',()=>viewCars(true));
+  on('guide',viewGuide);
+  on('switch',()=>{ store.del('session'); S.session=null; S.cars={}; viewBrand(); });
+}
+function refreshCars(){ if(S.screen==='cars'&&S.session){ const main=$app.querySelector('main'); if(main){ main.innerHTML=inAppWarn()+carsBody(); bindCars(); } } }
+async function viewCars(fetchNew){
+  S.screen='cars';
+  if(fetchNew) loadCars();
+  shell(fullName(),'Bước 2: Chọn dòng xe',carsBody()); bindCars();
+  if(!fetchNew){ pump(); return; }
+  const r=await postRetry({action:'status',dealerId:S.session.id,pin:S.session.pin},3);
+  if(!S.session) return;
+  if(r.ok){ setCars(r.cars); S.offset=r.now-Date.now(); }
+  else if(!r.retry){ store.del('session'); S.session=null; toast(r.error); viewBrand(); return; }
+  else { toast('Chưa tải được trạng thái mới.'); }
+  refreshCars(); pump();
+}
+function viewCar(m){
+  S.screen='car'; S.model=m;
+  const job=jobFor(m), c=S.cars[m]||{state:'empty'};
+  let body='<h2>'+esc(m)+'</h2>';
+  if(job&&!job.failed){ body+='<div class="note">Đang gửi ảnh của xe này. Bạn có thể báo cáo xe khác trong lúc chờ.</div><button class="btn alt" id="back">Quay lại</button>'; }
+  else if(job&&job.failed){ body+='<div class="note bad">'+esc(job.failed)+'</div><button class="btn" id="shoot">Chụp lại ảnh và Checksheet</button><button class="btn alt" id="back">Quay lại</button>'; }
+  else if(c.state==='done'){ body+='<div class="note good">Đã báo cáo: '+esc(c.text)+'</div><button class="btn alt" id="shoot">Chụp lại ảnh và Checksheet</button><button class="btn danger" id="move">Chọn nhầm đại lý? Chuyển báo cáo</button><button class="btn alt" id="back">Quay lại</button>'; }
+  else if(c.state==='absent'){ body+='<div class="note warn">'+esc(c.text)+'</div><button class="btn" id="shoot">Xe đã về, bắt đầu chụp</button><button class="btn danger" id="move">Chọn nhầm đại lý? Chuyển báo cáo</button><button class="btn alt" id="back">Quay lại</button>'; }
+  else { body+=standardsHtml()+shotsHtml()+'<button class="btn" id="shoot">Đã kiểm tra xong, bắt đầu chụp</button><button class="btn alt" id="absent">Xe không có mặt hôm nay</button><button class="btn alt" id="back">Quay lại</button>'; }
+  shell(fullName(),'Bước 2: '+m,body);
+  on('back',()=>viewCars(false));
+  on('shoot',async()=>{ if(job&&job.failed) await Q.del(job.id); startCapture(m); });
+  on('absent',()=>viewAbsent(m));
+  on('move',()=>viewMove(m));
+}
+
+/* ---------- Xe vắng ---------- */
+function viewAbsent(m){
+  S.screen='absent';
+  const min=S.config.minReason;
+  shell(fullName(),'Xe vắng: '+m,'<label for="reason">Lý do xe không có mặt (bắt buộc)</label><textarea id="reason" placeholder="Ví dụ: Xe đang đi lái thử cùng khách, dự kiến về lúc 11h"></textarea><div id="err"></div><button class="btn" id="save">Gửi lý do</button><button class="btn alt" id="back">Quay lại</button>');
+  on('back',()=>viewCar(m));
+  on('save',async()=>{
+    const reason=document.getElementById('reason').value.trim(), err=document.getElementById('err'), b=document.getElementById('save');
+    if(reason.length<min){ err.innerHTML='<div class="note bad" style="margin-top:10px">Vui lòng ghi rõ lý do, tối thiểu '+min+' ký tự.</div>'; return; }
+    b.disabled=true; b.textContent='Đang gửi…';
+    const r=await postRetry({action:'absent',dealerId:S.session.id,pin:S.session.pin,model:m,reason},4);
+    if(!r.ok){ b.disabled=false; b.textContent='Gửi lý do'; err.innerHTML='<div class="note bad" style="margin-top:10px">'+esc(r.error)+'</div>'; return; }
+    setCars(r.cars); toast('Đã ghi nhận xe vắng'); viewCars(false);
+  });
+}
+
+/* ---------- Chuyển báo cáo sang đại lý đúng ---------- */
+function viewMove(m){
+  S.screen='move';
+  const opts=S.config.dealers.filter(d=>d.brand===S.session.brand&&d.id!==S.session.id);
+  shell(fullName(),'Chuyển báo cáo: '+m,'<div class="note warn">Chỉ chuyển được báo cáo trong ngày hôm nay. Ảnh giữ nguyên giờ chụp.</div><label for="to">Đại lý đúng</label><select id="to">'+opts.map(d=>'<option value="'+esc(d.id)+'">'+esc(d.name)+'</option>').join('')+'</select><label for="pin">Mã PIN của đại lý đúng</label><input id="pin" inputmode="numeric" autocomplete="off" maxlength="8"><div id="err"></div><button class="btn" id="save">Chuyển báo cáo</button><button class="btn alt" id="back">Quay lại</button>');
+  on('back',()=>viewCar(m));
+  on('save',async()=>{
+    const pin=document.getElementById('pin').value.trim(), to=document.getElementById('to').value, err=document.getElementById('err'), b=document.getElementById('save');
+    if(!pin){ err.innerHTML='<div class="note bad" style="margin-top:10px">Vui lòng nhập mã PIN của đại lý đúng.</div>'; return; }
+    b.disabled=true; b.textContent='Đang chuyển…';
+    const r=await postRetry({action:'move',dealerId:S.session.id,pin:S.session.pin,model:m,toDealerId:to,toPin:pin},3);
+    if(!r.ok){ b.disabled=false; b.textContent='Chuyển báo cáo'; err.innerHTML='<div class="note bad" style="margin-top:10px">'+esc(r.error)+'</div>'; return; }
+    setCars(r.cars); toast('Đã chuyển báo cáo'); viewCars(false);
+  });
+}
+
+/* ---------- Bước 3: camera trực tiếp, không có lựa chọn tải ảnh ---------- */
+function positions(){ return S.config.positions; }
+function startCapture(m){ S.model=m; S.shots=positions().map(()=>null); S.stepIdx=0; S.retakeOnly=false; openCamera(); }
+function stopCamera(){ S.camRun=(S.camRun||0)+1; if(S.stream){ S.stream.getTracks().forEach(t=>t.stop()); S.stream=null; } }
+async function openCamera(){
+  S.screen='camera';
+  const run=S.camRun=(S.camRun||0)+1;
+  const p=positions()[S.stepIdx];
+  $app.innerHTML='<div class="cam"><div class="top"><b>'+esc(p.label)+'</b><p>'+esc(p.hint||'')+'</p><span>'+esc(fullName())+' · '+esc(S.model)+' · Bước '+(S.stepIdx+1)+'/'+positions().length+'</span><div class="steps">'+positions().map((_,i)=>'<i class="'+(S.shots[i]?'on':'')+'"></i>').join('')+'</div></div><div class="view"><video id="v" playsinline autoplay muted></video></div><div class="bar"><button class="txt" id="cancel">Hủy</button><button class="shutter" id="snap" aria-label="Chụp ảnh" disabled></button><span style="min-width:76px"></span></div></div>';
+  on('cancel',()=>{ stopCamera(); if(S.retakeOnly){ viewReview(); return; } if(S.shots.some(Boolean)&&!confirm('Hủy các ảnh vừa chụp của xe này?')){ openCamera(); return; } S.screen='car'; viewCar(S.model); });
+  try{
+    if(!S.stream||!S.stream.active){
+      const stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}}});
+      if(run!==S.camRun){ stream.getTracks().forEach(t=>t.stop()); return; }
+      S.stream=stream;
+    }
+    const v=document.getElementById('v'); if(!v) return stopCamera();
+    v.srcObject=S.stream; await v.play().catch(()=>{});
+    const snap=document.getElementById('snap'); snap.disabled=false; snap.onclick=()=>capture(v);
+  }catch(e){
+    if(run!==S.camRun) return;
+    stopCamera();
+    const denied=e&&(e.name==='NotAllowedError'||e.name==='SecurityError');
+    shell(fullName(),'Không mở được camera','<div class="note bad">'+(denied?'Trình duyệt đang chặn camera. Hãy cho phép quyền Camera cho trang này rồi thử lại, hoặc mở link bằng Chrome/Safari.':'Không mở được camera của thiết bị. Vui lòng dùng điện thoại có camera sau.')+'</div><button class="btn" id="again">Thử lại</button><button class="btn alt" id="back">Quay lại</button>');
+    on('again',openCamera); on('back',()=>viewCar(S.model));
+  }
+}
+function capture(v){
+  if(!v.videoWidth) return toast('Camera chưa sẵn sàng, vui lòng thử lại.');
+  const ts=now(), scale=Math.min(1,MAX_EDGE/Math.max(v.videoWidth,v.videoHeight));
+  const w=Math.round(v.videoWidth*scale), h=Math.round(v.videoHeight*scale);
+  const p=positions()[S.stepIdx];
+  const fs=Math.max(15,Math.round(Math.max(w,h)*0.021)), pad=Math.round(fs*0.55), barH=fs*2+pad*3;
+  const c=document.createElement('canvas'); c.width=w; c.height=h+barH;
+  const g=c.getContext('2d'); g.drawImage(v,0,0,w,h);
+  g.fillStyle='#000'; g.fillRect(0,h,w,barH);
+  g.fillStyle='#fff'; g.textBaseline='top';
+  g.font='600 '+fs+'px system-ui,-apple-system,Roboto,Arial,sans-serif';
+  g.fillText(stampTime(ts),pad,h+pad,w-pad*2);
+  g.font=fs+'px system-ui,-apple-system,Roboto,Arial,sans-serif';
+  g.fillText(S.model+' | '+p.label,pad,h+pad*2+fs,w-pad*2);
+  const dataUrl=c.toDataURL('image/jpeg',p.id==='4-checksheet'?CHECKSHEET_QUALITY:JPEG_QUALITY);
+  S.shots[S.stepIdx]={pos:p.id,capturedAt:ts,dataUrl};
+  viewShot();
+}
+function viewShot(){
+  S.screen='shot';
+  const s=S.shots[S.stepIdx], p=positions()[S.stepIdx];
+  $app.innerHTML='<div class="cam"><div class="top"><b>'+esc(p.label)+'</b><p>'+esc(p.hint||'')+'</p><span>Kiểm tra ảnh trước khi dùng</span></div><div class="view"><img id="pv" alt="Ảnh vừa chụp" src="'+s.dataUrl+'"></div><div class="bar"><button class="btn alt" id="redo">Chụp lại</button><button class="btn" id="use">Dùng ảnh này</button></div></div>';
+  on('redo',()=>openCamera());
+  on('use',()=>{
+    const next=S.shots.findIndex(x=>!x);
+    if(next<0||S.retakeOnly){ stopCamera(); viewReview(); }
+    else { S.stepIdx=next; openCamera(); }
+  });
+}
+function viewReview(){
+  S.screen='review'; S.retakeOnly=true;
+  shell(fullName(),'Kiểm tra trước khi gửi: '+S.model,'<div class="note">Đang báo cáo cho <b>'+esc(fullName())+'</b>, xe <b>'+esc(S.model)+'</b>. Xem lại ảnh rõ nét, đúng góc và Checksheet đủ chữ ký DP. Bấm vào ảnh nếu muốn chụp lại.</div><div class="grid">'+S.shots.map((s,i)=>'<button class="shot" data-i="'+i+'"><img alt="" src="'+s.dataUrl+'"><span>'+esc(positions()[i].label)+'<em>Chụp lại</em></span></button>').join('')+'</div><button class="btn" id="send">Gửi báo cáo xe này</button>');
+  $app.querySelectorAll('[data-i]').forEach(el=>el.onclick=()=>{ S.stepIdx=Number(el.dataset.i); openCamera(); });
+  on('send',async()=>{
+    const job={id:S.session.id+'|'+S.model+'|'+Date.now(),dealerId:S.session.id,pin:S.session.pin,model:S.model,photos:S.shots.map(s=>({pos:s.pos,capturedAt:s.capturedAt,image:s.dataUrl.split(',')[1]}))};
+    await Q.put(job); S.shots=[]; viewCars(false); pump();
+  });
+}
+document.addEventListener('visibilitychange',()=>{ if(document.hidden) return; if(S.screen==='camera'&&S.stream&&!S.stream.active) openCamera(); else if(S.screen==='cars'&&S.session) viewCars(true); pump(); });
+boot();
+</script>
+</body>
+</html>
